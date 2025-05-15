@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 接口测试工具 Pro</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --error: #ef233c;
+            --success: #4cc9f0;
+            --text: #2b2d42;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin: 0 0 25px;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+        }
+        
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            color: #adb5bd;
+            font-size: 1.1rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            background-color: var(--card-bg);
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+            line-height: 1.6;
+            font-family: inherit;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s;
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #response {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            white-space: pre-wrap;
+            min-height: 150px;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            tab-size: 2;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(67, 97, 238, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+            border-left: 4px solid;
+        }
+        
+        .alert.error {
+            color: var(--error);
+            background-color: #fff5f5;
+            border-color: var(--error);
+        }
+        
+        .alert.success {
+            color: var(--success);
+            background-color: #f0f9ff;
+            border-color: var(--success);
+        }
+        
+        .debug-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+            margin-right: 12px;
+            accent-color: var(--primary);
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .model-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            input, select, textarea {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 14px;
+            }
+        }
+        
+        /* JSON高亮样式 */
+        .json-key {
+            color: #d6336c;
+        }
+        
+        .json-string {
+            color: #20a39e;
+        }
+        
+        .json-number {
+            color: #f77f00;
+        }
+        
+        .json-boolean {
+            color: #4361ee;
+        }
+        
+        .json-null {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI 接口测试工具</h1>
+    <div class="container">
+        <!-- API地址输入 -->
+        <div class="form-group">
+            <label for="apiUrl">API 地址</label>
+            <div class="input-icon">🔗</div>
+            <input type="url" id="apiUrl" value="https://api.pearktrue.cn/api/openai" placeholder="https://api.example.com/endpoint">
+            <div class="debug-info">请输入完整的API端点地址，包含https://</div>
+        </div>
+        
+        <!-- API密钥输入 -->
+        <div class="form-group">
+            <label for="apiKey">API 密钥</label>
+            <div class="input-icon">🔑</div>
+            <input type="password" id="apiKey" placeholder="输入您的API密钥">
+            <div class="debug-info">密钥将仅保存在当前页面内存中</div>
+        </div>
+        
+        <!-- 模型选择 -->
+        <div class="form-group">
+            <label for="model">选择AI模型</label>
+            <select id="model">
+                <option value="deepseek-v3">DeepSeek V3</option>
+                <option value="deepseek-r1">DeepSeek R1</option>
+                <option value="qwq-32b" selected>QWQ-32B (默认)</option>
+                <option value="qwen-max">Qwen Max</option>
+                <option value="qwen-plus">Qwen Plus</option>
+                <option value="qwen-turbo">Qwen Turbo</option>
+                <option value="mistral-small">Mistral Small</option>
+            </select>
+            <div class="model-info" id="modelInfo">QWQ-32B: 32B参数通用模型</div>
+        </div>
+        
+        <!-- 消息输入框 -->
+        <div class="form-group">
+            <label for="message">对话内容</label>
+            <textarea id="message" placeholder="输入您想与AI交流的内容...">你好！请介绍一下你自己。</textarea>
+            <div class="debug-info">支持多行输入，可使用Markdown格式</div>
+        </div>
+        
+        <!-- 高级选项 -->
+        <div class="checkbox-group">
+            <input type="checkbox" id="advancedToggle">
+            <label for="advancedToggle">显示高级选项</label>
+        </div>
+        
+        <div id="advancedOptions" style="display: none;">
+            <!-- 流式响应 -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="stream">
+                <label for="stream">启用流式响应 (Stream)</label>
+            </div>
+            
+            <!-- 温度参数 -->
+            <div class="form-group">
+                <label for="temperature">温度 (Temperature)</label>
+                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                <div class="debug-info">
+                    控制随机性 (0-2): 
+                    <span id="tempValue">0.7</span>
+                    <span id="tempDesc">(适中创造性)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提交按钮 -->
+        <button id="submitBtn">
+            <span id="btnText">发送请求</span>
+            <span id="btnIcon">✉️</span>
+        </button>
+        
+        <!-- 加载状态 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在与AI交流中，请稍候...</p>
+            <div class="debug-info" id="loadingInfo">首次请求可能需要较长时间</div>
+        </div>
+        
+        <!-- 状态提示 -->
+        <div class="alert error" id="error"></div>
+        <div class="alert success" id="success"></div>
+        
+        <!-- 响应展示 -->
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label>AI 响应</label>
+                <button id="copyBtn" style="width: auto; padding: 8px 12px; font-size: 0.9rem;">复制结果</button>
+            </div>
+            <div id="response">等待您的请求...</div>
+            <div class="debug-info" id="responseInfo">响应将显示在这里</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM元素
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const apiUrlInput = document.getElementById('apiUrl');
+            const apiKeyInput = document.getElementById('apiKey');
+            const modelSelect = document.getElementById('model');
+            const modelInfo = document.getElementById('modelInfo');
+            const messageTextarea = document.getElementById('message');
+            const streamCheckbox = document.getElementById('stream');
+            const temperatureSlider = document.getElementById('temperature');
+            const tempValue = document.getElementById('tempValue');
+            const tempDesc = document.getElementById('tempDesc');
+            const advancedToggle = document.getElementById('advancedToggle');
+            const advancedOptions = document.getElementById('advancedOptions');
+            const loadingElement = document.getElementById('loading');
+            const loadingInfo = document.getElementById('loadingInfo');
+            const errorElement = document.getElementById('error');
+            const successElement = document.getElementById('success');
+            const responseElement = document.getElementById('response');
+            const responseInfo = document.getElementById('responseInfo');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // 模型描述信息
+            const modelDescriptions = {
+                'deepseek-v3': 'DeepSeek最新版本，强大的通用模型',
+                'deepseek-r1': 'DeepSeek研究版本，适合实验性任务',
+                'qwq-32b': '32B参数通用模型，平衡性能与质量',
+                'qwen-max': 'Qwen最大模型，最高质量输出',
+                'qwen-plus': 'Qwen增强版，性价比高',
+                'qwen-turbo': 'Qwen快速版，响应速度最快',
+                'mistral-small': 'Mistral小型模型，轻量高效'
+            };
+            
+            // 温度描述
+            const tempDescriptions = {
+                '0.0': '(完全确定性)',
+                '0.1': '(高度确定性)',
+                '0.2': '(较强确定性)',
+                '0.3': '(中等确定性)',
+                '0.4': '(适度确定性)',
+                '0.5': '(平衡性)',
+                '0.6': '(轻微创造性)',
+                '0.7': '(适中创造性)',
+                '0.8': '(较强创造性)',
+                '0.9': '(高度创造性)',
+                '1.0': '(强创造性)',
+                '1.1': '(非常创造性)',
+                '1.2': '(极强创造性)',
+                '1.3': '(极高创造性)',
+                '1.4': '(几乎随机)',
+                '1.5': '(较强随机性)',
+                '1.6': '(高度随机性)',
+                '1.7': '(非常随机)',
+                '1.8': '(极强随机性)',
+                '1.9': '(极高随机性)',
+                '2.0': '(完全随机)'
+            };
+            
+            // 初始化UI
+            function initUI() {
+                // 模型选择变化事件
+                modelSelect.addEventListener('change', function() {
+                    modelInfo.textContent = modelDescriptions[this.value] || '通用AI模型';
+                    modelInfo.style.display = 'block';
+                });
+                
+                // 触发一次显示当前模型信息
+                modelSelect.dispatchEvent(new Event('change'));
+                
+                // 温度滑块事件
+                temperatureSlider.addEventListener('input', function() {
+                    const value = this.value;
+                    tempValue.textContent = value;
+                    tempDesc.textContent = tempDescriptions[value] || '';
+                });
+                
+                // 高级选项切换
+                advancedToggle.addEventListener('change', function() {
+                    advancedOptions.style.display = this.checked ? 'block' : 'none';
+                });
+                
+                // 复制按钮事件
+                copyBtn.addEventListener('click', function() {
+                    navigator.clipboard.writeText(responseElement.textContent)
+                        .then(() => {
+                            const originalText = this.textContent;
+                            this.textContent = '✓ 已复制';
+                            setTimeout(() => {
+                                this.textContent = originalText;
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('复制失败:', err);
+                        });
+                });
+                
+                // 表单提交事件
+                submitBtn.addEventListener('click', sendRequest);
+            }
+            
+            // 发送请求
+            async function sendRequest() {
+                // 获取输入值
+                const apiUrl = apiUrlInput.value.trim();
+                const apiKey = apiKeyInput.value.trim();
+                const model = modelSelect.value;
+                const message = messageTextarea.value.trim();
+                const useStream = streamCheckbox.checked;
+                const temperature = parseFloat(temperatureSlider.value);
+                
+                // 验证输入
+                if (!apiUrl) {
+                    showError("请填写API地址", apiUrlInput);
+                    return;
+                }
+                
+                if (!apiUrl.startsWith('https://')) {
+                    showError("API地址必须使用HTTPS协议", apiUrlInput);
+                    return;
+                }
+                
+                if (!message) {
+                    showError("请输入对话内容", messageTextarea);
+                    return;
+                }
+                
+                // 更新UI状态
+                setLoading(true, "正在准备请求...");
+                errorElement.style.display = 'none';
+                successElement.style.display = 'none';
+                responseElement.textContent = '';
+                responseInfo.textContent = '正在连接AI服务...';
+                
+                try {
+                    // 构造请求数据
+                    const payload = {
+                        model: model,
+                        messages: [
+                            {
+                                role: "user",
+                                content: message
+                            }
+                        ],
+                        stream: useStream,
+                        temperature: temperature
+                    };
+                    
+                    // 设置请求头
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    };
+                    
+                    if (apiKey) {
+                        headers['Authorization'] = `Bearer ${apiKey}`;
+                    }
+                    
+                    // 更新加载状态
+                    setLoading(true, useStream ? "正在接收流式响应..." : "正在处理请求...");
+                    
+                    // 发送请求
+                    const response = await fetchWithTimeout(apiUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(payload)
+                    }, 30000); // 30秒超时
+                    
+                    // 处理响应
+                    if (!response.ok) {
+                        const errorData = await tryParseJson(response);
+                        throw new Error(errorData?.message || `HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 显示结果
+                    displayResponse(data);
+                    showSuccess("请求成功完成！");
+                    responseInfo.textContent = `响应时间: ${new Date().toLocaleTimeString()}`;
+                    
+                } catch (error) {
+                    handleRequestError(error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            
+            // 显示响应
+            function displayResponse(data) {
+                try {
+                    // 尝试美化JSON显示
+                    responseElement.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+                } catch {
+                    // 如果美化失败，直接显示原始数据
+                    responseElement.textContent = typeof data === 'string' ? data : JSON.stringify(data);
+                }
+            }
+            
+            // JSON语法高亮
+            function syntaxHighlight(json) {
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+            
+            // 处理请求错误
+            function handleRequestError(error) {
+                console.error('请求失败:', error);
+                
+                let errorMessage = error.message;
+                responseElement.textContent = '请求失败: ' + errorMessage;
+                responseInfo.textContent = '错误发生在: ' + new Date().toLocaleTimeString();
+                
+                // 特殊处理常见错误
+                if (errorMessage.includes('Failed to fetch')) {
+                    errorMessage += "<br><br>可能原因：<ul>" +
+                        "<li>跨域限制 (CORS) - API可能不支持浏览器直接访问</li>" +
+                        "<li>网络问题 - 检查开发者工具Network面板 (F12)</li>" +
+                        "<li>API地址错误 - 确认地址包含完整路径</li>" +
+                        "<li>证书问题 - 确保使用HTTPS且证书有效</li></ul>";
+                } else if (errorMessage.includes('timeout')) {
+                    errorMessage += "<br><br>建议：<ul>" +
+                        "<li>检查网络连接</li>" +
+                        "<li>尝试增加超时时间</li>" +
+                        "<li>如果是首次请求，可能是冷启动延迟</li></ul>";
+                }
+                
+                showError(errorMessage);
+            }
+            
+            // 设置加载状态
+            function setLoading(isLoading, message = '') {
+                if (isLoading) {
+                    submitBtn.disabled = true;
+                    btnText.textContent = '处理中...';
+                    btnIcon.textContent = '⏳';
+                    loadingElement.style.display = 'block';
+                    if (message) loadingInfo.textContent = message;
+                } else {
+                    submitBtn.disabled = false;
+                    btnText.textContent = '发送请求';
+                    btnIcon.textContent = '✉️';
+                    loadingElement.style.display = 'none';
+                }
+            }
+            
+            // 显示错误
+            function showError(message, element = null) {
+                errorElement.innerHTML = message;
+                errorElement.style.display = 'block';
+                if (element) element.focus();
+            }
+            
+            // 显示成功
+            function showSuccess(message) {
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+            }
+            
+            // 带超时的fetch
+            async function fetchWithTimeout(url, options, timeout) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw new Error(`请求超时 (${timeout/1000}秒)`);
+                }
+            }
+            
+            // 尝试解析JSON
+            async function tryParseJson(response) {
+                try {
+                    return await response.json();
+                } catch {
+                    try {
+                        return { message: await response.text() };
+                    } catch {
+                        return null;
+                    }
+                }
+            }
+            
+            // 初始化
+            initUI();
+        });
+    </script>
+</body>
+</html>
